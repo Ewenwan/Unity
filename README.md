@@ -13,6 +13,85 @@ Unity Assertion Summary
 =======================
 For the full list, see [UnityAssertionsReference.md](docs/UnityAssertionsReference.md).
 
+
+Unity是一个单元测试框架。目标是精简而强大。Unity测试框架的内核是三个文件：单个C
+文件和两个头文件。它们相互合作提供许多函数和宏以使得测试更顺滑。
+Unity的设计是跨平台的。它尽可能地遵从C标准，同时提供对许多不守规矩的嵌入式C编译器
+的支持。Unity已被用在许多编译器上，包括GCC、IAR、Clang、Green Hills、 Microchip和
+MS Visual Studio。将其移植到一个新目标上不需要太多工作量。
+
+> 目录结构
+
+src - 这是你关心的代码！这个文件夹包含一个C文件以及两个头文件。这三个文件 是 Unity。
+
+docs - 你正在读这个文档，所以可能你是自己进到这个文件夹中的。这里放着所有的文档。
+
+examples - 这里包含一些使用Unity的示例。
+
+extras - 这些是可选的Unity插件，它们不是内核工程的一部分。如果你是通过James Grenning的
+书找到我们的，你会想看看这里。
+
+test - 这里是Unity和它的所有脚本被测试的地方。如果你只是在用Unity，很可能你永远不需要
+看这个文件夹。如果你是团队中负责把Unity移植到新工具链的中奖者，这里可以帮助你验证所有东西
+都被合理地配置了。
+
+auto - 在这里你将发现一些有用的Ruby脚本，它们可以简化你的测试工作。他们完全只是可选的，
+不用它们照样可以使用Unity。
+
+> 怎么创建一个测试文件
+
+测试文件都是C文件。大部分情况下，你将为每个你想要测试的C模块创建一个测试文件。
+测试文件应该include unity.h以及你要测试的C模块的头文件。
+
+下一步，一个测试文件将包含一个setUp()以及tearDown()函数。setUp函数可以包含任何你
+想要在每个测试之前运行的东西。tearDown函数可以包含任何你想要在每个测试之后运行的东西。
+两个函数都不接受任何参数，也不返回东西。如果你在使用一个将这些函数配置为可选的编译器，
+你也许可以不实现他们。不确定？试一试不就知道了。如果你的编译器抱怨说它在链接时找不到
+setUp或tearDown，那你就知道你起码需要为它们创建一个空的函数了。
+
+文件的主体将会是一系列的测试函数。测试函数遵从以下命名约定，以"test_"或"spec_"为开头。
+不是必须按照这种方式命名它们，但是这样会使得其他开发者更容易看出哪些函数是测试。同样的，
+Unity或Ceedling自带的自动化脚本将默认通过这种前缀的方式来寻找测试函数。测试函数都不接受
+任何参数，也不返回东西。所有的测试计数是由Unity内部处理的。
+
+最终，在你的测试文件的最底下，你将写一个main()函数。这个函数将调用UNITY_BEGIN()，
+然后为每个测试调用RUN_TEST，然后最终是UNITY_END()。这是实际上触发每个测试函数运行
+的地方，所以重要的是，每个函数都要有它自己的RUN_TEST。
+
+把每个测试加进main函数的过程真是很无聊。如果你喜欢在构建过程中使用helper脚本，你可以
+考虑用我们特有用的generate_test_runner.rb脚本。它会为你创建main函数以及所有的调用，
+前提是你遵从建议的命名约定。这种情况下，你根本不需要将main函数包含进你的测试文件中。
+当你完成上述步骤，你的测试文件应该看起来像这样：
+
+```c
+#include "unity.h"
+#include "file_to_test.h"
+
+void setUp(void) {
+    // 在这里配置东西
+}
+
+void tearDown(void) {
+    // 在这里清理东西
+}
+
+void test_function_should_doBlahAndBlah(void) {
+    //测试
+}
+
+void test_function_should_doAlsoDoBlah(void) {
+    //更多测试
+}
+
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_function_should_doBlahAndBlah);
+    RUN_TEST(test_function_should_doAlsoDoBlah);
+    return UNITY_END();
+}
+
+```
+
 Basic Validity Tests
 --------------------
 
